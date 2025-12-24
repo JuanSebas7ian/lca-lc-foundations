@@ -1,3 +1,16 @@
+from langchain.agents import create_agent
+from langchain_aws import ChatBedrock
+
+llm = ChatBedrock(
+    model_id="us.meta.llama4-maverick-17b-instruct-v1:0",  # Nota el prefijo "us."
+    region_name="us-east-1",
+    model_kwargs={
+        "temperature": 0.5,
+        "max_tokens": 2048,
+        "top_p": 0.9,
+    }
+)
+
 from dotenv import load_dotenv
 from dataclasses import dataclass
 from langchain.agents import AgentState, create_agent
@@ -93,7 +106,7 @@ def dynamic_prompt_func(request: ModelRequest) -> str:
 
 
 agent = create_agent(
-        "gpt-5-nano",
+        llm,
         tools=[authenticate, check_inbox, send_email],
         state_schema=AuthenticatedState,
         context_schema=EmailContext,

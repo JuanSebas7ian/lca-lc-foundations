@@ -1,3 +1,16 @@
+from langchain.agents import create_agent
+from langchain_aws import ChatBedrock
+
+llm = ChatBedrock(
+    model_id="us.meta.llama4-maverick-17b-instruct-v1:0",  # Nota el prefijo "us."
+    region_name="us-east-1",
+    model_kwargs={
+        "temperature": 0.5,
+        "max_tokens": 2048,
+        "top_p": 0.9,
+    }
+)
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -28,7 +41,7 @@ Return recipe suggestions and eventually the recipe instructions to the user, if
 from langchain.agents import create_agent
 
 agent = create_agent(
-    model="gpt-5-nano",
+    model=llm,
     tools=[web_search],
-    system_prompt=system_prompt
+    state_modifier=system_prompt
 )
