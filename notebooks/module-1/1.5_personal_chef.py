@@ -43,5 +43,5 @@ from langchain.agents import create_agent
 agent = create_agent(
     model=llm,
     tools=[web_search],
-    state_modifier=system_prompt
+    system_prompt=system_prompt
 )
