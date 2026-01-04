@@ -26,17 +26,30 @@ load_dotenv()
 
 @dataclass
 class EmailContext:
+    """
+    Define el contexto estático del agente. 
+    Contiene información que no cambia durante la ejecución pero que el 
+    agente necesita consultar (como credenciales de una base de datos simulada).
+    """
     email_address: str = "julie@example.com"
     password: str = "password123"
 
 
 class AuthenticatedState(AgentState):
+    """
+    Define el esquema de memoria persistente del agente.
+    Al heredar de AgentState, mantiene el historial de mensajes y añade
+    la variable 'authenticated' para rastrear si el usuario ha iniciado sesión.
+    """
     authenticated: bool
 
 
 @tool
 def check_inbox() -> str:
-    """Check the inbox for recent emails"""
+    """
+    Herramienta para consultar los correos pendientes.
+    Solo será accesible para el agente si el estado 'authenticated' es True.
+    """
     return """
     Hi Julie, 
     I'm going to be in town next week and was wondering if we could grab a coffee?
@@ -46,13 +59,27 @@ def check_inbox() -> str:
 
 @tool
 def send_email(to: str, subject: str, body: str) -> str:
-    """Send an response email"""
+    """
+    Herramienta para enviar correos electrónicos.
+    Está configurada con un interruptor de 'Human in the Loop', lo que significa
+    que el sistema pausará la ejecución para pedir aprobación humana antes de enviar.
+    """
     return f"Email sent to {to} with subject {subject} and body {body}"
 
 
 @tool
 def authenticate(email: str, password: str, runtime: ToolRuntime) -> Command:
-    """Authenticate the user with the given email and password"""
+    """
+    Realiza la validación de credenciales comparando los datos del usuario con EmailContext.
+    
+    Argumentos:
+        email: Correo proporcionado por el usuario.
+        password: Clave proporcionada por el usuario.
+        runtime: Objeto que permite acceder al contexto y modificar el estado del agente.
+        
+    Retorna:
+        Un objeto Command que actualiza la variable 'authenticated' en el mapa de estado.
+    """
     if email == runtime.context.email_address and password == runtime.context.password:
         return Command(
             update={
@@ -77,9 +104,15 @@ def authenticate(email: str, password: str, runtime: ToolRuntime) -> Command:
 async def dynamic_tool_call(
     request: ModelRequest, handler: Callable[[ModelRequest], ModelResponse]
 ) -> ModelResponse:
-    """Allow read inbox and send email tools only if user provides correct email and password"""
+    """
+    MIDDLEWARE DE HERRAMIENTAS DINÁMICAS: 
+    Este método intercepta la llamada al modelo antes de que ocurra. 
+    Revisa si el usuario está autenticado en el 'state'. 
+    - Si SI: Le da acceso a las herramientas de email.
+    - Si NO: Solo le permite usar la herramienta de autenticación.
+    """
 
-    authenticated = request.state.get("authenticated")
+    authenticated = request.state.get("authenticated", False)
 
     if authenticated:
         tools = [check_inbox, send_email]
@@ -96,8 +129,12 @@ unauthenticated_prompt = "You are a helpful assistant that can authenticate user
 
 @dynamic_prompt
 def dynamic_prompt_func(request: ModelRequest) -> str:
-    """Generate system prompt based on authentication status"""
-    authenticated = request.state.get("authenticated")
+    """
+    MIDDLEWARE DE PROMPT DINÁMICO:
+    Cambia las instrucciones del sistema (System Prompt) dependiendo del estado.
+    Esto asegura que el agente sepa qué rol tomar (Seguridad vs Asistente de Email).
+    """
+    authenticated = request.state.get("authenticated", False)
 
     if authenticated:
         return authenticated_prompt
@@ -105,6 +142,9 @@ def dynamic_prompt_func(request: ModelRequest) -> str:
         return unauthenticated_prompt
 
 
+# CREACIÓN DEL AGENTE:
+# Aquí se orquestan todos los componentes: 
+# El LLM, las herramientas, el esquema de estado, el contexto y los middlewares.
 agent = create_agent(
         llm,
         tools=[authenticate, check_inbox, send_email],
@@ -117,7 +157,7 @@ agent = create_agent(
                 interrupt_on={
                     "authenticate": False,
                     "check_inbox": False,
-                    "send_email": True,
+                    "send_email": True, # Pausa para aprobación humana en esta herramienta
                 }
             ),
         ],
