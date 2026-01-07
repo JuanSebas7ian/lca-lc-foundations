@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from langchain_aws import ChatBedrock
+from langchain_aws import ChatBedrockConverse
 from langchain_core.tools import tool
 from langchain.messages import HumanMessage
 from langchain.agents import create_agent
@@ -17,13 +17,10 @@ def get_favourite_colour(runtime) -> str:
     """Get the favourite colour of the user"""
     return runtime.context.favourite_colour
 
-llm = ChatBedrock(
-    model_id="us.meta.llama4-maverick-17b-instruct-v1:0",
+llm = ChatBedrockConverse(
+    model="us.meta.llama4-maverick-17b-instruct-v1:0",
     region_name="us-east-1",
-    beta_use_converse_api=True, # Fixed this
-    model_kwargs={
-        "temperature": 0.0,
-    }
+    temperature=0.0,
 )
 
 agent = create_agent(

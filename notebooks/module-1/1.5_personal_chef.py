@@ -1,14 +1,12 @@
 from langchain.agents import create_agent
-from langchain_aws import ChatBedrock
+from langchain_aws import ChatBedrockConverse
 
-llm = ChatBedrock(
-    model_id="us.meta.llama4-maverick-17b-instruct-v1:0",  # Nota el prefijo "us."
+llm = ChatBedrockConverse(
+    model="us.meta.llama4-maverick-17b-instruct-v1:0",  # Nota el prefijo "us."
     region_name="us-east-1",
-    model_kwargs={
-        "temperature": 0.5,
-        "max_tokens": 2048,
-        "top_p": 0.9,
-    }
+    temperature=0.5,
+    max_tokens=2048,
+    top_p=0.9,
 )
 
 from dotenv import load_dotenv
