@@ -1,0 +1,20 @@
+Testing init_chat_model with AWS Bedrock...
+❌ Verification failed: Unsupported model_provider='aws_bedrock'.
+
+Supported model providers are: bedrock, together, google_genai, perplexity, ollama, azure_openai, google_vertexai, azure_ai, deepseek, huggingface, xai, bedrock_converse, openai, cohere, ibm, fireworks, google_anthropic_vertex, upstage, groq, anthropic, mistralai
+Traceback (most recent call last):
+  File "F:\Cursos_code\lca-lc-foundations\test_init_chat_model_v2.py", line 15, in <module>
+    model = init_chat_model(
+        model="amazon.nova-lite-v1:0", model_provider="aws_bedrock", temperature=0
+    )
+  File "C:\Users\Jelb7\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\langchain\chat_models\base.py", line 316, in init_chat_model
+    return _init_chat_model_helper(
+        cast("str", model),
+        model_provider=model_provider,
+        **kwargs,
+    )
+  File "C:\Users\Jelb7\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\langchain\chat_models\base.py", line 461, in _init_chat_model_helper
+    raise ValueError(msg)
+ValueError: Unsupported model_provider='aws_bedrock'.
+
+Supported model providers are: bedrock, together, google_genai, perplexity, ollama, azure_openai, google_vertexai, azure_ai, deepseek, huggingface, xai, bedrock_converse, openai, cohere, ibm, fireworks, google_anthropic_vertex, upstage, groq, anthropic, mistralai
